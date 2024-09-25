@@ -23,12 +23,15 @@ def get_ordered_item_pickups(game_mode: int = 1) -> Dict[str, ARNFLocationData]:
     #Add items for Normal Mode
     if game_mode == 1:
         # item_return = {**item_return, **{ f"Normal{i+1}": arnf_locations_start_id+i for i in range(normal_total_locations) }}
+        #Set locations for 1 to 14
         for i in range(1, normal_locations_region_one+1):
-            item_return[f"{normal_location_prefix}{i}"] = ARNFLocationData(region = "BreakoutOne", address=arnf_locations_start_id+i)
+            item_return[f"{normal_location_prefix}{i}"] = ARNFLocationData(region = "BreakoutOne", address=arnf_locations_start_id+i-1)
+        #Set locations for 15 to 34
         for i in range(normal_locations_region_one+1, normal_locations_region_one+normal_locations_region_two+1):
-            item_return[f"{normal_location_prefix}{i}"] = ARNFLocationData(region = "BreakoutTwo", address=arnf_locations_start_id+i, locked_item=f"{progression_item_prefix}4")
+            item_return[f"{normal_location_prefix}{i}"] = ARNFLocationData(region = "BreakoutTwo", address=arnf_locations_start_id+i-1)
+        #Set locations for 35 to 38
         for i in range(normal_locations_region_one+normal_locations_region_two+1, normal_locations_region_one+normal_locations_region_two+normal_locations_region_three+1):
-            item_return[f"{normal_location_prefix}{i}"] = ARNFLocationData(region = "BreakoutThree", address=arnf_locations_start_id+i, locked_item=f"{progression_item_prefix}7")
+            item_return[f"{normal_location_prefix}{i}"] = ARNFLocationData(region = "BreakoutThree", address=arnf_locations_start_id+i-1)
         
     # #Add items for Classic Boss Rush
     # if game_mode == 2:

@@ -4,13 +4,13 @@ from Options import Toggle, DefaultOnToggle, DeathLink, Range, Choice, PerGameCo
 
 class GameMode(Choice):
     """The type of game mode that this player will be performing.
-    Normal contains approximately 36 non-progression items, and 3 progression items.
-    Classic Boss Rush (accessed via the Seeded Runs menu option, then under the Secrets menu on the left) contains 13 items.
-    Exterminator contains 47 non-progression items and 3 progression items."""
+    Normal contains approximately 36 non-progression items, and 3 progression items."""
+    # Classic Boss Rush (accessed via the Seeded Runs menu option, then under the Secrets menu on the left) contains 13 items.
+    # Exterminator contains 47 non-progression items and 3 progression items."""
     display_name = "Game Mode"
     option_normal = 1
-    option_classic_boss_rush = 2
-    option_exterminator = 4
+    # option_classic_boss_rush = 2
+    # option_exterminator = 4
     default = 1
 
 
