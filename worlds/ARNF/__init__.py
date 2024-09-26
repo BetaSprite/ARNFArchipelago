@@ -57,7 +57,8 @@ class ARNFWorld(World):
 
     def create_items(self) -> None:
         #Initialize item pool
-        item_pool: List[ARNFItem] = []
+        item_pool: List[str] = []
+        itempool: List[ARNFItem] = []
         logger = logging.getLogger()
         
         #Generate the items
@@ -68,9 +69,10 @@ class ARNFWorld(World):
                 # (name.startswith(classic_boss_rush_item_prefix) and self.options.game_mode.value == 2) or 
                 # (name.startswith(exterminator_item_prefix) and self.options.game_mode.value == 4)):
                 if item.amount_in_pool > 0:
-                    item_pool += [self.create_item(name)] * item.amount_in_pool
+                    item_pool += [name] * item.amount_in_pool
         
-        self.multiworld.itempool += item_pool
+        itempool = [item for item in map(lambda name: self.create_item(name), item_pool)]
+        self.multiworld.itempool += itempool
 
 
     def get_filler_item_name(self) -> str:
@@ -82,20 +84,16 @@ class ARNFWorld(World):
         
         # Create regions.
         for region_name, region_data in region_data_table.items():
-            create_region(self.multiworld, self.player, region_name)
-            region = Region(region_name, self.player, self.multiworld)
-            self.multiworld.regions.append(region)
+            this_locations: Dict[str, int] = {}
+            for location_name, location_data in location_data_table.items():
+                if location_data.region == region_name:
+                    this_locations[location_name] = location_data.address
+            self.multiworld.regions.append(create_region(self.multiworld, self.player, region_name, this_locations))
 
         # Create connections.
         for region_name, region_data in region_data_table.items():
-            for reg in region_data.connecting_regions:
-                self.multiworld.get_region(region_name, self.player).connect(self.multiworld.get_region(reg, self.player))
-
-        # Create locations.
-        for region_name, region_data in region_data_table.items():
-            for location_name, location_data in location_data_table.items():
-                if location_data.region == region_name:
-                    self.multiworld.get_region(region_name, self.player).locations.append(ARNFLocation(self.player, location_name, location_data.address, self.multiworld.get_region(region_name, self.player)))
+            for reg, rule in region_data.connecting_regions.items():
+                self.multiworld.get_region(region_name, self.player).connect(self.multiworld.get_region(reg, self.player), region_name + " -> " + reg, lambda state, rule=rule, player=self.player: rule(state, player))
 
         # logger.info(f"locked_locations: {locked_locations}")
 
@@ -144,9 +142,6 @@ class ARNFWorld(World):
 
     def set_rules(self) -> None:
         # set_rule(self.multiworld.get_location("Victory", self.player), lambda state: state.can_reach(f"VictoryCheck", "Location", self.player))
-        if self.options.game_mode == 1:
-            set_rule(self.multiworld.get_entrance("BreakoutOne -> BreakoutTwo", self.player), lambda state: state.has(f"{progression_item_prefix}4", self.player))
-            set_rule(self.multiworld.get_entrance("BreakoutTwo -> BreakoutThree", self.player), lambda state: state.has(f"{progression_item_prefix}7", self.player))
         
         # Win Condition
         self.multiworld.completion_condition[self.player] = lambda state: state.has("Victory", self.player)
@@ -159,6 +154,12 @@ def create_events(world: MultiWorld, player: int) -> None:
     victory_region.locations.append(victory_event)
 
 
-def create_region(world: MultiWorld, player: int, name: str) -> Region:
+def create_region(world: MultiWorld, player: int, name: str, locations: Dict[str, int] = None):
     ret = Region(name, player, world)
+    if locations:
+        for location in locations:
+            loc_id = location_table.get(location, 0)
+            location = ARNFLocation(player, location, loc_id, ret)
+            ret.locations.append(location)
+
     return ret

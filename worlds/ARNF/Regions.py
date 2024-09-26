@@ -1,16 +1,25 @@
-from typing import Dict, List, NamedTuple
+import typing
+from typing import NamedTuple, List, Dict
 
+if typing.TYPE_CHECKING:
+    import BaseClasses
 
-class ARNFRegionData(NamedTuple):
-    connecting_regions: List[str] = []
+    CollectionRule = typing.Callable[[BaseClasses.CollectionState, int], bool]
+    ItemRule = typing.Callable[[BaseClasses.Item], bool]
+else:
+    CollectionRule = typing.Callable[[object], bool]
+    ItemRule = typing.Callable[[object], bool]
+
     
+class ARNFRegionData(NamedTuple):
+    connecting_regions: Dict[str, CollectionRule] = {}
 
 
 region_data_table: Dict[str, ARNFRegionData] = {
-    "Menu": ARNFRegionData(["BreakoutOne"]),
-    "BreakoutOne": ARNFRegionData(["BreakoutTwo"]),
-    "BreakoutTwo": ARNFRegionData(["BreakoutThree"]),
-    "BreakoutThree": ARNFRegionData(["Victory"]),
+    "Menu": ARNFRegionData({"BreakoutOne": lambda state, player: True}),
+    "BreakoutOne": ARNFRegionData({"BreakoutTwo": lambda state, player: state.has("ProgItem4", player)}),
+    "BreakoutTwo": ARNFRegionData({"BreakoutThree": lambda state, player: state.has("ProgItem7", player)}),
+    "BreakoutThree": ARNFRegionData({"Victory": lambda state, player: True}),
     "Victory": ARNFRegionData()
 }
 
